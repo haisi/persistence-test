@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>li.selman</groupId>
+        <artifactId>persistence-test</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>query-capture</artifactId>
+    <packaging>jar</packaging>
+
+    <name>query-capture</name>
+    <description>Captures every SQL statement executed through a DataSource by wrapping it with
+        datasource-proxy, independent of whether the caller is Spring Data JPA, Hibernate, JdbcTemplate, or
+        plain JDBC. Includes a JUnit 5 extension that resets capture state between tests.</description>
+
+    <properties>
+        <datasource-proxy.version>1.10.1</datasource-proxy.version>
+        <h2.version>2.4.240</h2.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>persistence-test-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Does the actual JDBC-layer interception (Connection/Statement/ResultSet proxies); we only
+            translate its callbacks into our own CapturedQuery model. -->
+            <groupId>net.ttddyy</groupId>
+            <artifactId>datasource-proxy</artifactId>
+            <version>${datasource-proxy.version}</version>
+        </dependency>
+        <dependency>
+            <!-- compile scope (not the parent's test-scope junit-jupiter aggregator): the extension and
+            parameter resolver in .junit are shipped as part of this module's main API. -->
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

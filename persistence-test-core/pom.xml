@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>li.selman</groupId>
+        <artifactId>persistence-test</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>persistence-test-core</artifactId>
+    <packaging>jar</packaging>
+
+    <name>persistence-test-core</name>
+    <description>Database-agnostic domain model (captured queries, statement types, bind parameters) and the
+        SQL normalization pipeline shared by every other persistence-test module. Depends on nothing but
+        JSqlParser - no Hibernate, no Spring, no JDBC driver.</description>
+
+    <properties>
+        <jsqlparser.version>5.3</jsqlparser.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>${jsqlparser.version}</version>
+        </dependency>
+    </dependencies>
+</project>

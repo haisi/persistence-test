@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>li.selman</groupId>
+    <artifactId>persistence-test</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>persistence-test</name>
+    <description>JUnit 5 library that detects persistence regressions - N+1 queries, query-count drift,
+        missing indexes, unexpected ORM behavior - in Spring Boot integration tests, by capturing SQL at the
+        JDBC layer instead of parsing Hibernate logs.</description>
+    <url>https://github.com/haisi/persistence-test</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>haisi</id>
+            <name>Hasan Selman Kara</name>
+            <email>hasan.selman.kara@gmail.com</email>
+            <url>https://github.com/haisi</url>
+        </developer>
+    </developers>
+
+    <!--
+    Foundation milestone: only the modules that everything else depends on. The remaining modules from the
+    target architecture (query-analysis, query-assertions, snapshot-testing, plan-assertions,
+    hibernate-support, spring-boot-autoconfigure) are intentionally not scaffolded yet - see README.md's
+    roadmap. An empty module with nothing but a package-info.java fails javadoc:jar and adds no value; they
+    will be added as real code lands.
+    -->
+    <modules>
+        <module>persistence-test-core</module>
+        <module>query-capture</module>
+    </modules>
+
+    <scm>
+        <connection>scm:git:git://github.com/haisi/persistence-test.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/haisi/persistence-test.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/haisi/persistence-test</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/haisi/persistence-test/issues</url>
+    </issueManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>staging-local</id>
+            <name>Local Staging Repository</name>
+            <url>file://${project.build.directory}/staging-deploy</url>
+        </repository>
+    </distributionManagement>
+
+    <properties>
+
+        <archunit.version>1.4.2</archunit.version>
+        <assertj.version>3.27.7</assertj.version>
+
+        <error-prone-core.version>2.50.0</error-prone-core.version>
+        <error-prone.patch-args/>
+
+        <jspecify.version>1.0.0</jspecify.version>
+        <junit.version>6.1.2</junit.version>
+        <maven.compiler.release>25</maven.compiler.release>
+        <null-markeder.version>1.2.0</null-markeder.version>
+        <nullaway.version>0.13.7</nullaway.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Base package every module's NullAway/ArchitectureTest config is scoped to. -->
+        <root.package>li.selman.persistencetest</root.package>
+    </properties>
+
+    <dependencies>
+        <!-- Inherited by every module: annotation-only / test-scope deps every module needs identically. -->
+        <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_annotations</artifactId>
+            <version>${error-prone-core.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>${jspecify.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>${archunit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>null-markeder</artifactId>
+            <version>${null-markeder.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.4</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.6</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <!--
+            All quality-gate plugins live here instead of in <build><plugins>, so -Dquick skips every one of
+            them and falls back to a bare javac compile plus tests. Active by default; add -Dquick to
+            disable it, e.g. `./mvnw verify -Dquick`. Inherited by every child module.
+            -->
+            <id>qa</id>
+            <activation>
+                <property>
+                    <name>!quick</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.diffplug.spotless</groupId>
+                        <artifactId>spotless-maven-plugin</artifactId>
+                        <version>3.8.0</version>
+                        <configuration>
+                            <java>
+                                <palantirJavaFormat>
+                                    <style>PALANTIR</style>
+                                </palantirJavaFormat>
+                                <removeUnusedImports/>
+                                <formatAnnotations/>
+                            </java>
+                            <pom>
+                                <sortPom>
+                                    <nrOfIndentSpace>4</nrOfIndentSpace>
+                                    <encoding>${project.build.sourceEncoding}</encoding>
+                                    <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+                                    <sortDependencies>scope,groupId,artifactId</sortDependencies>
+                                    <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
+                                    <sortModules>true</sortModules>
+                                    <sortPlugins>groupId,artifactId</sortPlugins>
+                                    <sortProperties>true</sortProperties>
+                                </sortPom>
+                            </pom>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>3.6.0</version>
+                        <configuration>
+                            <checkstyleRules>
+                                <module name="Checker">
+                                    <module name="io.spring.nohttp.checkstyle.check.NoHttpCheck"/>
+                                    <module name="TreeWalker">
+                                        <module name="IllegalImport">
+                                            <property name="regexp" value="true"/>
+                                            <property name="illegalClasses" value="                                                 org\.jetbrains\.annotations\.CheckReturnValue,                                                 org\.jetbrains\.annotations\.VisibleForTesting,                                                 io\.micrometer\.core\.lang\.Nullable,                                                 javax\.annotation\.Nullable,                                                 org\.springframework\.lang\.Nullable,                                                 org\.testng\.AssertJUnit(\..*?)?"/>
+                                        </module>
+                                    </module>
+                                </module>
+                            </checkstyleRules>
+                            <excludeGeneratedSources>true</excludeGeneratedSources>
+                            <failOnViolation>true</failOnViolation>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            <resourceIncludes>**/*</resourceIncludes>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.puppycrawl.tools</groupId>
+                                <artifactId>checkstyle</artifactId>
+                                <version>13.8.0</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>io.spring.nohttp</groupId>
+                                <artifactId>nohttp-checkstyle</artifactId>
+                                <version>0.0.11</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>run-checkstyle</id>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.15.0</version>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                            <compilerArgs combine.children="append">
+                                <arg>-Xlint:all,-serial,-processing,-varargs</arg>
+                                <arg>-Werror</arg>
+                                <arg>-Xplugin:ErrorProne -Xep:Var:ERROR -Xep:StringSplitter:OFF
+                                    -XepOpt:NullAway:AnnotatedPackages=${root.package}
+                                    -XepOpt:NullAway:CheckOptionalEmptiness=true
+                                    -XepOpt:IdentifierName:AllowInitialismsInTypeName=true
+                                    -XepOpt:InlineMe:SkipInliningsWithComments=false
+                                    -XepOpt:Nullness:Conservative=false
+                                    -Xep:Java8ApiChecker:OFF
+                                    -Xep:StaticOrDefaultInterfaceMethod:OFF
+                                    -Xep:Varifier:OFF
+                                    -Xep:YodaCondition:OFF
+                                    -XepOpt:CheckReturnValue:CheckAllConstructors=true
+                                    ${error-prone.patch-args}</arg>
+                                <arg>-XDcompilePolicy=simple</arg>
+                                <arg>--should-stop=ifError=FLOW</arg>
+                            </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>com.google.errorprone</groupId>
+                                    <artifactId>error_prone_core</artifactId>
+                                    <version>${error-prone-core.version}</version>
+                                </path>
+                                <path>
+                                    <groupId>com.uber.nullaway</groupId>
+                                    <artifactId>nullaway</artifactId>
+                                    <version>${nullaway.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.12.0</version>
+                        <configuration>
+                            <doclint>none</doclint>
+                            <failOnError>false</failOnError>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.4.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>3.5.6</version>
+                        <executions>
+                            <execution>
+                                <id>generate-test-report</id>
+                                <goals>
+                                    <goal>report-only</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/site/tests</outputDirectory>
+                                    <outputName>index</outputName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.15</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <!--
+                                    JSqlParser's generated tokenizer has methods too large for JaCoCo's ASM
+                                    to instrument (MethodTooLargeException); it's a third-party dependency
+                                    class anyway, never something this project's own coverage rules apply
+                                    to, so skip it at the agent level rather than let it throw during class
+                                    loading of every test that touches the parser.
+                                    -->
+                                    <excludes>
+                                        <exclude>net.sf.jsqlparser.*</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                                <phase>test</phase>
+                            </execution>
+                            <execution>
+                                <id>check</id>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <phase>verify</phase>
+                                <configuration>
+                                    <!--
+                                    Deliberately relaxed from the archetype's 100% default: this library has
+                                    real defensive branches (JDBC proxy edge cases, SPI dispatch, parser
+                                    fallbacks) where a literal 100% gate would force tests that assert
+                                    nothing meaningful. High-but-not-total is the honest target.
+                                    -->
+                                    <rules>
+                                        <rule>
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                                <limit>
+                                                    <counter>LINE</counter>
+                                                    <minimum>0.85</minimum>
+                                                </limit>
+                                                <limit>
+                                                    <counter>BRANCH</counter>
+                                                    <minimum>0.75</minimum>
+                                                </limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
