@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>li.selman</groupId>
+        <artifactId>persistence-test</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>hibernate-support</artifactId>
+    <packaging>jar</packaging>
+
+    <name>hibernate-support</name>
+    <description>Optional Hibernate integration: resolves a JPA entity class to its mapped table name via a
+        live EntityManagerFactory, and entity-aware query assertions (containsSelect(Customer.class) style)
+        built on top of that. The only module in this project that depends on Hibernate - core modules
+        never do.</description>
+
+    <properties>
+        <h2.version>2.4.240</h2.version>
+        <hibernate.version>7.4.5.Final</hibernate.version>
+        <jakarta-persistence.version>3.2.0</jakarta-persistence.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <!-- Declared explicitly (rather than relying on hibernate-core's transitive dependency) since
+            our public API (EntityTableResolver) takes a jakarta.persistence.EntityManagerFactory directly. -->
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta-persistence.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>persistence-test-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>query-capture</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <!-- compile scope (not the parent's test-scope aggregator): AssertJ assert classes are part of
+            this module's main API. -->
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

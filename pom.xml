@@ -38,6 +38,7 @@
     will be added as real code lands.
     -->
     <modules>
+        <module>hibernate-support</module>
         <module>persistence-test-core</module>
         <module>query-analysis</module>
         <module>query-assertions</module>
