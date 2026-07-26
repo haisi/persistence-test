@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/haisi/persistence-test/badge.svg?branch=main)](https://coveralls.io/github/haisi/persistence-test?branch=main)
 [![License](https://img.shields.io/github/license/haisi/persistence-test)](LICENSE)
 
-[**Website**](https://haisi.github.io/persistence-test/)
+[**Website**](https://selman.li/persistence-test/)
 
 A JUnit 5 library for Spring Boot integration tests that detects persistence regressions - N+1 queries,
 query-count drift, missing indexes, unexpected ORM behavior changes - by capturing SQL at the JDBC layer
