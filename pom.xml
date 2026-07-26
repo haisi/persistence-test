@@ -43,6 +43,7 @@
         <module>query-analysis</module>
         <module>query-assertions</module>
         <module>query-capture</module>
+        <module>snapshot-testing</module>
     </modules>
 
     <scm>

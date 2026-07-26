@@ -1,0 +1,13 @@
+li.selman.persistencetest.snapshot.QuerySnapshotSerializerIntegrationTest.matchesTheCommittedYamlSnapshot=queries:
+  - type: SELECT
+    tables:
+      - customer
+    normalizedSql: |
+      select * from customer where id = ?
+    count: 2
+  - type: UPDATE
+    tables:
+      - customer
+    normalizedSql: |
+      update customer set name = ?
+    count: 1
