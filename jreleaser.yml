@@ -37,6 +37,7 @@ deploy:
         active: ALWAYS
         url: https://central.sonatype.com/api/v1/publisher
         stagingRepositories:
+          - target/staging-deploy
           - hibernate-support/target/staging-deploy
           - persistence-test-core/target/staging-deploy
           - plan-assertions/target/staging-deploy
