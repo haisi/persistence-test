@@ -19,6 +19,30 @@
 
     <url>https://github.com/haisi/persistence-test</url>
 
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>haisi</id>
+            <name>Hasan Selman Kara</name>
+            <email>hasan.selman.kara@gmail.com</email>
+            <url>https://github.com/haisi</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/haisi/persistence-test.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/haisi/persistence-test.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/haisi/persistence-test</url>
+    </scm>
+
     <properties>
         <h2.version>2.4.240</h2.version>
         <hibernate.version>7.4.5.Final</hibernate.version>
