@@ -40,6 +40,7 @@
     <modules>
         <module>hibernate-support</module>
         <module>persistence-test-core</module>
+        <module>plan-assertions</module>
         <module>query-analysis</module>
         <module>query-assertions</module>
         <module>query-capture</module>
