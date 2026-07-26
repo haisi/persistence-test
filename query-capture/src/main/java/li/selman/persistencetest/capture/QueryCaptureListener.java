@@ -98,6 +98,7 @@ public final class QueryCaptureListener implements QueryExecutionListener {
                 sql,
                 normalized.normalizedSql(),
                 normalized.statementType(),
+                normalized.tables(),
                 parameters,
                 duration,
                 affectedRows,

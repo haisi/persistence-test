@@ -29,6 +29,7 @@ class CapturedQueryTest {
                 "select 1",
                 "select 1",
                 StatementType.SELECT,
+                List.of("customer"),
                 mutableParams,
                 Duration.ofMillis(5),
                 null,
@@ -42,6 +43,29 @@ class CapturedQueryTest {
     }
 
     @Test
+    void defensivelyCopiesTablesList() {
+        var mutableTables = new java.util.ArrayList<String>();
+        mutableTables.add("customer");
+        var captured = new CapturedQuery(
+                0,
+                Instant.EPOCH,
+                "select 1",
+                "select 1",
+                StatementType.SELECT,
+                mutableTables,
+                List.of(),
+                Duration.ofMillis(5),
+                null,
+                null,
+                "main",
+                "conn-1");
+
+        mutableTables.add("orders");
+
+        assertThat(captured.tables()).containsExactly("customer");
+    }
+
+    @Test
     void isFailureReflectsPresenceOfException() {
         assertThat(query(0, StatementType.SELECT).isFailure()).isFalse();
 
@@ -51,6 +75,7 @@ class CapturedQueryTest {
                 "select 1",
                 "select 1",
                 StatementType.SELECT,
+                List.of("customer"),
                 List.of(),
                 null,
                 null,
@@ -83,6 +108,7 @@ class CapturedQueryTest {
                 "sql",
                 "sql",
                 type,
+                List.of("customer"),
                 List.of(),
                 Duration.ofMillis(1),
                 null,

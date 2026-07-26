@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>li.selman</groupId>
+        <artifactId>persistence-test</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>query-assertions</artifactId>
+    <packaging>jar</packaging>
+
+    <name>query-assertions</name>
+    <description>Fluent AssertJ-style DSL over captured queries: assertThatQueries() reads from the ambient
+        QueryCaptureContext and provides count/table/N+1/duplicate assertions with actionable failure
+        messages, plus query filtering to ignore migration/metadata noise.</description>
+
+    <properties>
+        <h2.version>2.4.240</h2.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>persistence-test-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>query-analysis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>query-capture</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <!-- compile scope (not the parent's test-scope aggregator): AssertJ assert classes are part of
+            this module's main API. -->
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <!-- Used only to exercise assertThatQueries()'s no-arg overload against a real capture
+            pipeline in QueryAssertionsTest, rather than reaching into query-capture's package-private
+            QueryCaptureContext.record(). -->
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

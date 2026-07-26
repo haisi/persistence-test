@@ -63,6 +63,7 @@ class QueryCaptureIntegrationTest {
 
         CapturedQuery insertQuery = queries.get(0);
         assertThat(insertQuery.statementType()).isEqualTo(StatementType.INSERT);
+        assertThat(insertQuery.tables()).containsExactly("customer");
         assertThat(insertQuery.parameters()).hasSize(2);
         assertThat(insertQuery.parameters().get(0).position()).isEqualTo(1);
         assertThat(insertQuery.parameters().get(0).value()).isEqualTo(1L);
@@ -73,6 +74,7 @@ class QueryCaptureIntegrationTest {
 
         CapturedQuery selectQuery = queries.get(1);
         assertThat(selectQuery.statementType()).isEqualTo(StatementType.SELECT);
+        assertThat(selectQuery.tables()).containsExactly("customer");
         assertThat(selectQuery.normalizedSql()).contains("customer").contains("id");
         assertThat(selectQuery.parameters()).hasSize(1);
         assertThat(selectQuery.parameters().get(0).value()).isEqualTo(1L);

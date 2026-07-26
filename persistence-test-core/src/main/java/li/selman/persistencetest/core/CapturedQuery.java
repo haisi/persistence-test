@@ -20,6 +20,8 @@ import org.jspecify.annotations.Nullable;
  * @param normalizedSql a normalized, deterministic rendering of {@code sql}; see
  *     {@code li.selman.persistencetest.core.normalize.SqlNormalizer}.
  * @param statementType the kind of statement this is.
+ * @param tables tables (and views) referenced by the statement, lower-cased and sorted; empty if unknown
+ *     (e.g. the normalizer couldn't parse this statement).
  * @param parameters bind parameters in position order; empty for statements with none.
  * @param duration wall-clock execution time, or {@code null} if execution never completed (e.g. the
  *     statement threw before the driver reported timing).
@@ -36,6 +38,7 @@ public record CapturedQuery(
         String sql,
         String normalizedSql,
         StatementType statementType,
+        List<String> tables,
         List<BindParameter> parameters,
         @Nullable Duration duration,
         @Nullable Long affectedRows,
@@ -49,6 +52,7 @@ public record CapturedQuery(
         if (sequence < 0) {
             throw new IllegalArgumentException("sequence must be >= 0, got " + sequence);
         }
+        tables = List.copyOf(tables);
         parameters = List.copyOf(parameters);
     }
 

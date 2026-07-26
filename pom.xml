@@ -39,6 +39,8 @@
     -->
     <modules>
         <module>persistence-test-core</module>
+        <module>query-analysis</module>
+        <module>query-assertions</module>
         <module>query-capture</module>
     </modules>
 

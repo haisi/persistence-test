@@ -85,6 +85,7 @@ class QueryCaptureContextTest {
                 sql,
                 StatementType.SELECT,
                 List.of(),
+                List.of(),
                 Duration.ofMillis(1),
                 null,
                 null,
