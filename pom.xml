@@ -45,6 +45,7 @@
         <module>query-assertions</module>
         <module>query-capture</module>
         <module>snapshot-testing</module>
+        <module>spring-boot-autoconfigure</module>
     </modules>
 
     <scm>

@@ -1,0 +1,2 @@
+org.springframework.test.context.TestExecutionListener=\
+li.selman.persistencetest.springboot.QueryCaptureTestExecutionListener

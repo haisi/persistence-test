@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>li.selman</groupId>
+        <artifactId>persistence-test</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>spring-boot-autoconfigure</artifactId>
+    <packaging>jar</packaging>
+
+    <name>spring-boot-autoconfigure</name>
+    <description>Spring Boot 4 auto-configuration: wraps the application's DataSource bean(s) with
+        QueryCapture automatically, and registers a TestExecutionListener that resets QueryCaptureContext
+        before every test method - so @SpringBootTest works with no manual QueryCapture.wrap(...) or
+        @ExtendWith(QueryCaptureExtension.class) wiring.</description>
+
+    <properties>
+        <h2.version>2.4.240</h2.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
+        <spring-framework.version>7.0.8</spring-framework.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>persistence-test-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>li.selman</groupId>
+            <artifactId>query-capture</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Not test-scoped: QueryCaptureTestExecutionListener implements TestExecutionListener as
+            part of this module's main API, registered for every consuming project's tests via
+            META-INF/spring.factories. -->
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test-autoconfigure</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

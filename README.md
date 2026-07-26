@@ -8,11 +8,59 @@ instead of parsing Hibernate logs.
 
 Targets Java 25, Spring Boot 4, Spring Data JPA, Hibernate 7, JdbcTemplate, and PostgreSQL.
 
-## Status: foundation milestone
+## Quickstart (Spring Boot)
 
-This repository currently implements the two modules everything else depends on. It is not yet usable
-end-to-end from a Spring Boot test - there is no auto-configuration or AssertJ-style DSL yet. See
-[Roadmap](#roadmap).
+```xml
+<dependency>
+    <groupId>li.selman</groupId>
+    <artifactId>spring-boot-autoconfigure</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>li.selman</groupId>
+    <artifactId>query-assertions</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>test</scope>
+</dependency>
+```
+
+```java
+import static li.selman.persistencetest.assertions.QueryAssertions.assertThatQueries;
+
+@SpringBootTest
+class OrderRepositoryTest {
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Test
+    void findsOrdersByCustomerWithoutNPlusOne() {
+        orderRepository.findByCustomerId(customerId);
+
+        assertThatQueries().selects(1).containsNoDelete().hasNoNPlusOne();
+    }
+}
+```
+
+No manual `DataSource` wrapping and no `@ExtendWith` needed: the `DataSource` bean is wrapped automatically,
+and capture state resets before every test method.
+
+Without Spring Boot, wire `QueryCapture.wrap(...)` around your `DataSource` and add
+`@ExtendWith(QueryCaptureExtension.class)` yourself - see `query-capture` below.
+
+## Modules
+
+```text
+persistence-test-core        domain model + SQL normalization, no framework dependencies
+├── query-capture             JDBC-layer capture via datasource-proxy
+│   ├── query-analysis        statistics, duplicate/N+1 detection
+│   │   └── query-assertions  the assertThatQueries() AssertJ DSL
+│   ├── hibernate-support     entity-aware assertions (optional Hibernate dependency)
+│   ├── snapshot-testing      deterministic query snapshots via java-snapshot-testing
+│   └── spring-boot-autoconfigure   automatic DataSource wrapping + test wiring
+└── plan-assertions           PostgreSQL EXPLAIN-backed index/scan assertions
+```
 
 ### `persistence-test-core`
 
@@ -23,8 +71,7 @@ only [JSqlParser](https://github.com/JSqlParser/JSqlParser).
 - `SqlNormalizer` (SPI) / `JSqlParserSqlNormalizer` (default impl) - turns raw SQL into a `NormalizedQuery`
   (statement type, referenced tables, and a normalized SQL rendering) that's stable across whitespace,
   comments, keyword casing, and identifier-quoting differences, while still distinguishing real semantic
-  differences (joins, predicates, columns, grouping, limits). See the Javadoc on
-  `JSqlParserSqlNormalizer` for the one documented gap: alias names are not yet canonicalized.
+  differences (joins, predicates, columns, grouping, limits).
 
 ### `query-capture`
 
@@ -38,21 +85,106 @@ Data JPA, Hibernate, JdbcTemplate, and plain JDBC alike, without special-casing 
 - `QueryCaptureExtension` (JUnit 5) - resets capture state before each test and can inject
   `QueryCaptureContext` as a test method parameter.
 
+### `query-analysis`
+
+Pure analyzers over `List<CapturedQuery>` - no JUnit/AssertJ dependency, reusable outside a test assertion
+(e.g. in a profiling report):
+
+- `QueryStatistics` - counts per statement type, total/average duration, accessed tables.
+- `duplicatesOf` - queries with identical SQL *and* identical bind parameters, executed more than once.
+- `repeatedShapesOf` / `nPlusOneCandidatesOf` - the same SQL shape executed repeatedly with different
+  parameters; a heuristic on repetition count, since captured queries don't track how many rows an outer
+  `SELECT` returned.
+
+### `query-assertions`
+
+The `assertThatQueries()` AssertJ DSL, reading from the ambient `QueryCaptureContext` by default:
+
 ```java
-@ExtendWith(QueryCaptureExtension.class)
-class OrderRepositoryTest {
+assertThatQueries()
+    .ignore(QueryFilters.isFlywayMetadata())
+    .selects(2)
+    .updates(1)
+    .containsTable("customer")
+    .containsNoDelete()
+    .hasNoNPlusOne();
 
-    @Test
-    void findsOrdersByCustomer(QueryCaptureContext queries) {
-        orderRepository.findByCustomerId(customerId);
-
-        assertThat(queries.capturedQueries()).hasSize(1);
-    }
-}
+assertThatQueries().lastSelect().hasTable("customer").hasParameterCount(1);
 ```
 
-Wire `QueryCapture.wrap(...)` around wherever your test `DataSource` bean is created (e.g. a
-`@TestConfiguration` bean post-processor) until `spring-boot-autoconfigure` exists to do it automatically.
+Failure messages include the full execution timeline and summary statistics, not just the mismatched count.
+`QueryFilters` has common predicates for Flyway/Liquibase/Postgres-catalog noise.
+
+### `hibernate-support`
+
+Entity-to-table resolution via a live Hibernate `MappingMetamodel` (not re-derived from `@Table`
+annotations, so custom naming strategies still resolve correctly), plus entity-aware assertions:
+
+```java
+HibernateAssertions.assertThatQueries(new HibernateEntityTableResolver(entityManagerFactory))
+    .containsSelect(Customer.class)
+    .containsNoDelete(Customer.class);
+```
+
+A separate entry point from `query-assertions`, not an extension of `QueriesAssert` - Java has no mechanism
+to retroactively add methods to another module's fluent-assertion type. The only module here that depends
+on Hibernate; everything else works with plain JDBC.
+
+### `snapshot-testing`
+
+Deterministic, structured query snapshots - never raw SQL strings, never volatile data (timestamps,
+durations, connection/thread ids):
+
+```yaml
+queries:
+  - type: SELECT
+    tables:
+      - customer
+    normalizedSql: |
+      select * from customer where id = ?
+    count: 2
+  - type: UPDATE
+    tables:
+      - customer
+    normalizedSql: |
+      update customer set name = ?
+    count: 1
+```
+
+Repeated identical shapes collapse into one entry with a count, so an N+1 fix that reduces occurrences
+shows up as a one-line count change on review, not a diff over several near-duplicate entries.
+`QuerySnapshots.of(queries)` builds the snapshot (default: `SnapshotLevel.SEMANTIC`), `SnapshotNormalizer`
+masks non-deterministic literals (UUIDs, timestamps, generated IDs), and `QuerySnapshotSerializer`
+integrates with [java-snapshot-testing](https://github.com/codedabble-dev/java-snapshot-testing) for
+storage/diffing/approval:
+
+```java
+expect.serializer(new QuerySnapshotSerializer()).toMatchSnapshot(QuerySnapshots.current());
+```
+
+### `plan-assertions`
+
+PostgreSQL execution-plan assertions via `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`, deriving stable facts
+rather than ever comparing raw plan text:
+
+```java
+CapturedQuery lastSelect = assertThatQueries().lastSelect().capturedQuery();
+PlanAssertions.assertThatPlanOf(connection, lastSelect)
+    .usesIndex()
+    .usesAnyIndexOn("customer")
+    .avoidsSequentialScan();
+```
+
+`ANALYZE` executes the statement, including any side-effecting DML - `PostgresExecutionPlanAnalyzer` always
+runs inside a savepoint it rolls back to afterward, verified against a real PostgreSQL instance (via
+Testcontainers) including that a `DELETE` never actually persists.
+
+### `spring-boot-autoconfigure`
+
+Wraps the application's `DataSource` bean(s) with `QueryCapture` automatically (a `BeanPostProcessor`
+registered via `@AutoConfiguration`), and registers a `TestExecutionListener` (via `META-INF/spring.factories`)
+that resets `QueryCaptureContext` before every test method - so `@SpringBootTest` works with no manual
+wiring. Disable with `persistence-test.enabled=false`.
 
 ## Building
 
@@ -63,38 +195,27 @@ Wire `QueryCapture.wrap(...)` around wherever your test `DataSource` bean is cre
 Runs Spotless, Checkstyle, Error Prone/NullAway, and a JaCoCo coverage gate (85% line / 75% branch -
 deliberately below the 100% used by [java-lib-archetype](https://github.com/haisi/java-lib-archetype), this
 project's archetype, since real defensive branches here - JDBC proxy edge cases, SPI dispatch, parser
-fallbacks - don't have a meaningful test for every branch). Add `-Dquick` to skip all of that and just
-compile and test.
+fallbacks, connection-failure handling - don't have a meaningful test for every branch). Add `-Dquick` to
+skip all of that and just compile and test. `plan-assertions`' integration test needs Docker (Testcontainers
+PostgreSQL).
 
-## Roadmap
+## Known limitations
 
-Not yet built, in dependency order:
+Tracked as follow-up rather than fixed now (see the relevant Javadoc for each):
 
-1. **`query-analysis`** - duplicate/repeated query detection, N+1 pattern detection, query-count and
-   statement statistics, execution timelines, on top of `CapturedQuery`/`NormalizedQuery`.
-2. **`query-assertions`** - the AssertJ-style DSL (`assertThatQueries().selects(2).hasNoNPlusOne()...`),
-   plus query filtering (ignore Flyway/Liquibase/metadata queries).
-3. **`snapshot-testing`** - deterministic YAML/JSON snapshot generation from `NormalizedQuery`, delegating
-   storage/diffing/approval to
-   [java-snapshot-testing](https://github.com/codedabble-dev/java-snapshot-testing) via a custom
-   `SnapshotSerializer`, plus the transformation pipeline (mask UUIDs/timestamps/generated IDs) and the
-   `QuerySnapshotTransformer` SPI.
-4. **`plan-assertions`** - PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`-backed assertions
-   (`usesIndex()`, `avoidsSequentialScan()`, ...), run inside a rolled-back transaction since `ANALYZE`
-   executes the statement (including any `INSERT`/`UPDATE`/`DELETE`).
-5. **`hibernate-support`** - optional entity-aware assertions (`containsSelect(Customer.class)`); the core
-   modules above never depend on Hibernate.
-6. **`spring-boot-autoconfigure`** - automatic `DataSource` wrapping and JUnit 5 wiring for
-   `@SpringBootTest`, so none of the manual `QueryCapture.wrap(...)` plumbing above is needed.
-
-Known limitations tracked for follow-up rather than fixed now (see the relevant Javadoc for each):
-
-- `JSqlParserSqlNormalizer` does not canonicalize alias names.
+- `JSqlParserSqlNormalizer` does not canonicalize alias names - two queries identical except for alias
+  spelling normalize differently today. `SnapshotNormalizer`'s `ignoreAliases()`/`ignoreComments()` are
+  documented no-ops for the same reason (comments are already gone by construction).
 - `QueryCaptureListener` only captures the first batch item's bind parameters for batched statements, and
   uses datasource-proxy's deprecated `getQueryArgsList()` rather than the lower-level
   `getParametersList()`/`ParameterSetOperation` API.
 - `QueryCaptureContext` cannot see queries executed on a different thread than the test thread (e.g. from
   `@Async` code or an executor) without further work to propagate capture across the handoff.
+- No "Intent" snapshot level (describing *what* a query does, above the SQL/Semantic levels) - generalized
+  query-to-intent inference is open-ended enough to need its own design discussion.
+- Adapters for other databases (MySQL, MariaDB, Oracle, SQL Server) and other JDBC-based frameworks (jOOQ,
+  MyBatis) are not implemented; `ExecutionPlanAnalyzer` and `SqlNormalizer` are SPIs specifically so those
+  can be added without modifying this library.
 
 ## License
 
