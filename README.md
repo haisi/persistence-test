@@ -18,13 +18,13 @@ Targets Java 25, Spring Boot 4, Spring Data JPA, Hibernate 7, JdbcTemplate, and 
 <dependency>
     <groupId>li.selman</groupId>
     <artifactId>spring-boot-autoconfigure</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <scope>test</scope>
 </dependency>
 <dependency>
     <groupId>li.selman</groupId>
     <artifactId>query-assertions</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
