@@ -80,7 +80,7 @@
         <junit.version>6.1.2</junit.version>
         <maven.compiler.release>25</maven.compiler.release>
         <null-markeder.version>1.2.0</null-markeder.version>
-        <nullaway.version>0.13.7</nullaway.version>
+        <nullaway.version>0.13.8</nullaway.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Base package every module's NullAway/ArchitectureTest config is scoped to. -->
         <root.package>li.selman.persistencetest</root.package>
