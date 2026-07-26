@@ -1,0 +1,78 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: "25"
+          distribution: temurin
+          cache: maven
+
+      - name: Build, test and generate reports
+        run: ./mvnw --batch-mode --no-transfer-progress verify
+
+      - name: Assemble site
+        # No single module speaks for the whole project, so coverage/test reports are published
+        # per module under /coverage/<module>/ and /tests/<module>/, with a plain index linking to
+        # each - rather than picking one module to feature or fabricating a merged report.
+        run: |
+          rm -rf site
+          mkdir -p site/coverage site/tests
+          cp -r docs/. site/
+
+          modules="hibernate-support persistence-test-core plan-assertions query-analysis query-assertions query-capture snapshot-testing spring-boot-autoconfigure"
+
+          {
+            echo "<!doctype html><meta charset=utf-8><title>Coverage - persistence-test</title>"
+            echo "<h1>Coverage by module</h1><ul>"
+            for m in $modules; do
+              cp -r "$m/target/site/jacoco" "site/coverage/$m"
+              echo "<li><a href=\"$m/\">$m</a></li>"
+            done
+            echo "</ul>"
+          } > site/coverage/index.html
+
+          {
+            echo "<!doctype html><meta charset=utf-8><title>Test reports - persistence-test</title>"
+            echo "<h1>Test reports by module</h1><ul>"
+            for m in $modules; do
+              cp -r "$m/target/site/tests" "site/tests/$m"
+              echo "<li><a href=\"$m/\">$m</a></li>"
+            done
+            echo "</ul>"
+          } > site/tests/index.html
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

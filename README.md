@@ -1,6 +1,10 @@
 # persistence-test
 
 [![CI](https://github.com/haisi/persistence-test/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/haisi/persistence-test/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/haisi/persistence-test/badge.svg?branch=main)](https://coveralls.io/github/haisi/persistence-test?branch=main)
+[![License](https://img.shields.io/github/license/haisi/persistence-test)](LICENSE)
+
+[**Website**](https://haisi.github.io/persistence-test/)
 
 A JUnit 5 library for Spring Boot integration tests that detects persistence regressions - N+1 queries,
 query-count drift, missing indexes, unexpected ORM behavior changes - by capturing SQL at the JDBC layer
@@ -61,6 +65,17 @@ persistence-test-core        domain model + SQL normalization, no framework depe
 │   └── spring-boot-autoconfigure   automatic DataSource wrapping + test wiring
 └── plan-assertions           PostgreSQL EXPLAIN-backed index/scan assertions
 ```
+
+| Module | Maven Central | Javadoc |
+|---|---|---|
+| `persistence-test-core` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/persistence-test-core.svg)](https://central.sonatype.com/artifact/li.selman/persistence-test-core) | [![Javadoc](https://javadoc.io/badge2/li.selman/persistence-test-core/javadoc.svg)](https://javadoc.io/doc/li.selman/persistence-test-core) |
+| `query-capture` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/query-capture.svg)](https://central.sonatype.com/artifact/li.selman/query-capture) | [![Javadoc](https://javadoc.io/badge2/li.selman/query-capture/javadoc.svg)](https://javadoc.io/doc/li.selman/query-capture) |
+| `query-analysis` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/query-analysis.svg)](https://central.sonatype.com/artifact/li.selman/query-analysis) | [![Javadoc](https://javadoc.io/badge2/li.selman/query-analysis/javadoc.svg)](https://javadoc.io/doc/li.selman/query-analysis) |
+| `query-assertions` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/query-assertions.svg)](https://central.sonatype.com/artifact/li.selman/query-assertions) | [![Javadoc](https://javadoc.io/badge2/li.selman/query-assertions/javadoc.svg)](https://javadoc.io/doc/li.selman/query-assertions) |
+| `hibernate-support` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/hibernate-support.svg)](https://central.sonatype.com/artifact/li.selman/hibernate-support) | [![Javadoc](https://javadoc.io/badge2/li.selman/hibernate-support/javadoc.svg)](https://javadoc.io/doc/li.selman/hibernate-support) |
+| `snapshot-testing` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/snapshot-testing.svg)](https://central.sonatype.com/artifact/li.selman/snapshot-testing) | [![Javadoc](https://javadoc.io/badge2/li.selman/snapshot-testing/javadoc.svg)](https://javadoc.io/doc/li.selman/snapshot-testing) |
+| `spring-boot-autoconfigure` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/spring-boot-autoconfigure.svg)](https://central.sonatype.com/artifact/li.selman/spring-boot-autoconfigure) | [![Javadoc](https://javadoc.io/badge2/li.selman/spring-boot-autoconfigure/javadoc.svg)](https://javadoc.io/doc/li.selman/spring-boot-autoconfigure) |
+| `plan-assertions` | [![Maven Central](https://img.shields.io/maven-central/v/li.selman/plan-assertions.svg)](https://central.sonatype.com/artifact/li.selman/plan-assertions) | [![Javadoc](https://javadoc.io/badge2/li.selman/plan-assertions/javadoc.svg)](https://javadoc.io/doc/li.selman/plan-assertions) |
 
 ### `persistence-test-core`
 
@@ -217,6 +232,25 @@ Tracked as follow-up rather than fixed now (see the relevant Javadoc for each):
   MyBatis) are not implemented; `ExecutionPlanAnalyzer` and `SqlNormalizer` are SPIs specifically so those
   can be added without modifying this library.
 
+## Releasing
+
+Releases are published to Maven Central via [JReleaser](https://jreleaser.org). Pushing a tag matching `v*`
+(e.g. `v0.1.0`) triggers `.github/workflows/release.yml`, which stages every module's build artifacts and
+hands them to JReleaser to sign and deploy to the [Central Portal](https://central.sonatype.com).
+
+```shell
+./bumpPomVersion.sh
+git push
+./release.sh
+```
+
+## Contributing
+
+Bug reports, feature requests and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). This
+project follows a [Code of Conduct](CODE_OF_CONDUCT.md); by participating you agree to abide by it.
+
 ## License
 
 [Apache License, Version 2.0](LICENSE).
+
+See `jreleaser.yml` for the deployment configuration.

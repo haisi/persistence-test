@@ -1,0 +1,48 @@
+project:
+  name: persistence-test
+  description: Detects persistence regressions in Spring Boot integration tests by capturing SQL at the JDBC layer
+  longDescription: |
+    persistence-test is a JUnit 5 library that detects persistence regressions - N+1 queries,
+    query-count drift, missing indexes, unexpected ORM behavior - in Spring Boot integration tests,
+    by capturing SQL at the JDBC layer instead of parsing Hibernate logs.
+  links:
+    homepage: https://github.com/haisi/persistence-test
+  authors:
+    - Hasan Selman Kara
+  license: Apache-2.0
+  inceptionYear: "2026"
+  languages:
+    java:
+      groupId: li.selman
+      version: "25"
+
+release:
+  github:
+    owner: haisi
+    name: persistence-test
+    overwrite: true
+    changelog:
+      formatted: ALWAYS
+      preset: conventional-commits
+
+signing:
+  active: ALWAYS
+  pgp:
+    armored: true
+
+deploy:
+  maven:
+    mavenCentral:
+      sonatype:
+        active: ALWAYS
+        url: https://central.sonatype.com/api/v1/publisher
+        stagingRepositories:
+          - hibernate-support/target/staging-deploy
+          - persistence-test-core/target/staging-deploy
+          - plan-assertions/target/staging-deploy
+          - query-analysis/target/staging-deploy
+          - query-assertions/target/staging-deploy
+          - query-capture/target/staging-deploy
+          - snapshot-testing/target/staging-deploy
+          - spring-boot-autoconfigure/target/staging-deploy
+        applyMavenCentralRules: true

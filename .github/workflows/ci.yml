@@ -21,3 +21,17 @@ jobs:
 
       - name: Build and test
         run: ./mvnw --batch-mode --no-transfer-progress verify
+
+      - name: Report coverage to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          files: >-
+            hibernate-support/target/site/jacoco/jacoco.xml
+            persistence-test-core/target/site/jacoco/jacoco.xml
+            plan-assertions/target/site/jacoco/jacoco.xml
+            query-analysis/target/site/jacoco/jacoco.xml
+            query-assertions/target/site/jacoco/jacoco.xml
+            query-capture/target/site/jacoco/jacoco.xml
+            snapshot-testing/target/site/jacoco/jacoco.xml
+            spring-boot-autoconfigure/target/site/jacoco/jacoco.xml
+          format: jacoco
