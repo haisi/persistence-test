@@ -16,6 +16,8 @@
         repeated-query-shape/N+1 detection, and accessed tables. Depends only on persistence-test-core, so
         these are usable independently of the query-assertions DSL.</description>
 
+    <url>https://github.com/haisi/persistence-test</url>
+
     <dependencies>
         <dependency>
             <groupId>li.selman</groupId>

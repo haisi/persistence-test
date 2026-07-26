@@ -16,6 +16,8 @@
         SQL normalization pipeline shared by every other persistence-test module. Depends on nothing but
         JSqlParser - no Hibernate, no Spring, no JDBC driver.</description>
 
+    <url>https://github.com/haisi/persistence-test</url>
+
     <properties>
         <jsqlparser.version>5.3</jsqlparser.version>
     </properties>

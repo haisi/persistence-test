@@ -17,6 +17,8 @@
         before every test method - so @SpringBootTest works with no manual QueryCapture.wrap(...) or
         @ExtendWith(QueryCaptureExtension.class) wiring.</description>
 
+    <url>https://github.com/haisi/persistence-test</url>
+
     <properties>
         <h2.version>2.4.240</h2.version>
         <spring-boot.version>4.1.0</spring-boot.version>

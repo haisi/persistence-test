@@ -17,6 +17,8 @@
         statement, including any side-effecting DML). Derives stable facts (usesIndex, avoidsSequentialScan,
         estimatedRowsLessThan, ...) from the plan rather than ever comparing raw plan text.</description>
 
+    <url>https://github.com/haisi/persistence-test</url>
+
     <properties>
         <org-json.version>20260719</org-json.version>
         <postgresql.version>42.7.13</postgresql.version>

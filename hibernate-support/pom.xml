@@ -17,6 +17,8 @@
         built on top of that. The only module in this project that depends on Hibernate - core modules
         never do.</description>
 
+    <url>https://github.com/haisi/persistence-test</url>
+
     <properties>
         <h2.version>2.4.240</h2.version>
         <hibernate.version>7.4.5.Final</hibernate.version>

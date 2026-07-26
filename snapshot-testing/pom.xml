@@ -17,6 +17,8 @@
         only; storage, diffing, and approval are delegated to java-snapshot-testing via a custom
         SnapshotSerializer.</description>
 
+    <url>https://github.com/haisi/persistence-test</url>
+
     <properties>
         <java-snapshot-testing.version>4.2.0</java-snapshot-testing.version>
         <slf4j.version>2.0.17</slf4j.version>

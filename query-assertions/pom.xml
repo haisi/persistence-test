@@ -16,6 +16,8 @@
         QueryCaptureContext and provides count/table/N+1/duplicate assertions with actionable failure
         messages, plus query filtering to ignore migration/metadata noise.</description>
 
+    <url>https://github.com/haisi/persistence-test</url>
+
     <properties>
         <h2.version>2.4.240</h2.version>
     </properties>
