@@ -76,7 +76,7 @@
         <error-prone-core.version>2.50.0</error-prone-core.version>
         <error-prone.patch-args/>
 
-        <jspecify.version>1.0.0</jspecify.version>
+        <jspecify.version>1.0.1</jspecify.version>
         <junit.version>6.1.2</junit.version>
         <maven.compiler.release>25</maven.compiler.release>
         <null-markeder.version>1.2.0</null-markeder.version>
